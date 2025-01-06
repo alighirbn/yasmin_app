@@ -65,7 +65,7 @@ class Contract extends HiveObject {
   final List<Installment> contractInstallments;
 
   @HiveField(20)
-  final Payment payment;
+  final List<Payment> payments;
 
   Contract({
     required this.id,
@@ -88,7 +88,7 @@ class Contract extends HiveObject {
     required this.building,
     required this.customer,
     required this.contractInstallments,
-    required this.payment,
+    required this.payments,
   });
 
   factory Contract.fromJson(Map<String, dynamic> json) {
@@ -118,7 +118,10 @@ class Contract extends HiveObject {
           ?.map((installment) => Installment.fromJson(installment ?? {}))
           .toList() ??
           [],
-      payment: Payment.fromJson(json['payment'] ?? {}),
+      payments: (json['payments'] as List?)
+          ?.map((payment) => Payment.fromJson(payment ?? {}))
+          .toList() ??
+          [],
     );
   }
 }
@@ -126,20 +129,90 @@ class Contract extends HiveObject {
 @HiveType(typeId: 1)
 class Building {
   @HiveField(0)
-  final String number;
+  final int id;
 
   @HiveField(1)
-  final String address;
+  final int? userIdCreate;
+
+  @HiveField(2)
+  final int? userIdUpdate;
+
+  @HiveField(3)
+  final int buildingCategoryId;
+
+  @HiveField(4)
+  final int buildingTypeId;
+
+  @HiveField(5)
+  final int classificationId;
+
+  @HiveField(6)
+  final String urlAddress;
+
+  @HiveField(7)
+  final int hidden;
+
+  @HiveField(8)
+  final String buildingNumber;
+
+  @HiveField(9)
+  final String houseNumber;
+
+  @HiveField(10)
+  final String blockNumber;
+
+  @HiveField(11)
+  final String buildingArea;
+
+  @HiveField(12)
+  final String buildingMapX;
+
+  @HiveField(13)
+  final String buildingMapY;
+
+  @HiveField(14)
+  final String? createdAt;
+
+  @HiveField(15)
+  final String? updatedAt;
 
   Building({
-    required this.number,
-    required this.address,
+    required this.id,
+    this.userIdCreate,
+    this.userIdUpdate,
+    required this.buildingCategoryId,
+    required this.buildingTypeId,
+    required this.classificationId,
+    required this.urlAddress,
+    required this.hidden,
+    required this.buildingNumber,
+    required this.houseNumber,
+    required this.blockNumber,
+    required this.buildingArea,
+    required this.buildingMapX,
+    required this.buildingMapY,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Building.fromJson(Map<String, dynamic> json) {
     return Building(
-      number: json['building_number'] ?? '',
-      address: json['building_address'] ?? '',
+      id: json['id'] ?? 0,
+      userIdCreate: json['user_id_create'],
+      userIdUpdate: json['user_id_update'],
+      buildingCategoryId: json['building_category_id'] ?? 0,
+      buildingTypeId: json['building_type_id'] ?? 0,
+      classificationId: json['classification_id'] ?? 0,
+      urlAddress: json['url_address'] ?? '',
+      hidden: json['hidden'] ?? 0,
+      buildingNumber: json['building_number'] ?? '',
+      houseNumber: json['house_number'] ?? '',
+      blockNumber: json['block_number'] ?? '',
+      buildingArea: json['building_area'] ?? '',
+      buildingMapX: json['building_map_x'] ?? '',
+      buildingMapY: json['building_map_y'] ?? '',
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
     );
   }
 }
@@ -147,20 +220,90 @@ class Building {
 @HiveType(typeId: 2)
 class Customer {
   @HiveField(0)
-  final String fullName;
+  final int id;
 
   @HiveField(1)
-  final String phone;
+  final int? userIdCreate;
+
+  @HiveField(2)
+  final int? userIdUpdate;
+
+  @HiveField(3)
+  final String urlAddress;
+
+  @HiveField(4)
+  final String customerFullName;
+
+  @HiveField(5)
+  final String customerPhone;
+
+  @HiveField(6)
+  final String customerEmail;
+
+  @HiveField(7)
+  final String customerCardNumber;
+
+  @HiveField(8)
+  final String customerCardIssudAuth;
+
+  @HiveField(9)
+  final String customerCardIssudDate;
+
+  @HiveField(10)
+  final String motherFullName;
+
+  @HiveField(11)
+  final String fullAddress;
+
+  @HiveField(12)
+  final String addressCardNumber;
+
+  @HiveField(13)
+  final String saleman;
+
+  @HiveField(14)
+  final String createdAt;
+
+  @HiveField(15)
+  final String updatedAt;
 
   Customer({
-    required this.fullName,
-    required this.phone,
+    required this.id,
+    this.userIdCreate,
+    this.userIdUpdate,
+    required this.urlAddress,
+    required this.customerFullName,
+    required this.customerPhone,
+    required this.customerEmail,
+    required this.customerCardNumber,
+    required this.customerCardIssudAuth,
+    required this.customerCardIssudDate,
+    required this.motherFullName,
+    required this.fullAddress,
+    required this.addressCardNumber,
+    required this.saleman,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) {
     return Customer(
-      fullName: json['customer_full_name'] ?? '',
-      phone: json['customer_phone'] ?? '',
+      id: json['id'] ?? 0,
+      userIdCreate: json['user_id_create'],
+      userIdUpdate: json['user_id_update'],
+      urlAddress: json['url_address'] ?? '',
+      customerFullName: json['customer_full_name'] ?? '',
+      customerPhone: json['customer_phone'] ?? '',
+      customerEmail: json['customer_email'] ?? '',
+      customerCardNumber: json['customer_card_number'] ?? '',
+      customerCardIssudAuth: json['customer_card_issud_auth'] ?? '',
+      customerCardIssudDate: json['customer_card_issud_date'] ?? '',
+      motherFullName: json['mother_full_name'] ?? '',
+      fullAddress: json['full_address'] ?? '',
+      addressCardNumber: json['address_card_number'] ?? '',
+      saleman: json['saleman'] ?? '',
+      createdAt: json['created_at'] ?? '',
+      updatedAt: json['updated_at'] ?? '',
     );
   }
 }
@@ -168,22 +311,67 @@ class Customer {
 @HiveType(typeId: 3)
 class Installment {
   @HiveField(0)
-  final String dueDate;
+  final int id;
 
   @HiveField(1)
-  final double amount;
+  final int userIdCreate;
+
+  @HiveField(2)
+  final int? userIdUpdate;
+
+  @HiveField(3)
+  final int contractId;
+
+  @HiveField(4)
+  final int installmentId;
+
+  @HiveField(5)
+  final String urlAddress;
+
+  @HiveField(6)
+  final double installmentAmount;
+
+  @HiveField(7)
+  final String installmentDate;
+
+  @HiveField(8)
+  final int paid;
+
+  @HiveField(9)
+  final String createdAt;
+
+  @HiveField(10)
+  final String updatedAt;
 
   Installment({
-    required this.dueDate,
-    required this.amount,
+    required this.id,
+    required this.userIdCreate,
+    this.userIdUpdate,
+    required this.contractId,
+    required this.installmentId,
+    required this.urlAddress,
+    required this.installmentAmount,
+    required this.installmentDate,
+    required this.paid,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   factory Installment.fromJson(Map<String, dynamic> json) {
     return Installment(
-      dueDate: json['installment_due_date'] ?? '',
-      amount: (json['installment_amount'] is String)
+      id: json['id'] ?? 0,
+      userIdCreate: json['user_id_create'] ?? 0,
+      userIdUpdate: json['user_id_update'],
+      contractId: json['contract_id'] ?? 0,
+      installmentId: json['installment_id'] ?? 0,
+      urlAddress: json['url_address'] ?? '',
+      installmentAmount: (json['installment_amount'] is String)
           ? double.tryParse(json['installment_amount']) ?? 0.0
           : (json['installment_amount'] as num?)?.toDouble() ?? 0.0,
+      installmentDate: json['installment_date'] ?? '',
+      paid: json['paid'] ?? 0,
+      createdAt: json['created_at'] ?? '',
+      updatedAt: json['updated_at'] ?? '',
     );
   }
 }
@@ -194,44 +382,74 @@ class Payment {
   final int id;
 
   @HiveField(1)
-  final String method;
+  final int userIdCreate;
 
   @HiveField(2)
-  final double amount;
+  final int? userIdUpdate;
 
   @HiveField(3)
-  final String status;
+  final int paymentContractId;
 
   @HiveField(4)
-  final String transactionId;
+  final int contractInstallmentId;
 
   @HiveField(5)
-  final String createdAt;
+  final int cashAccountId;
 
   @HiveField(6)
-  final String? updatedAt;
+  final String urlAddress;
+
+  @HiveField(7)
+  final double paymentAmount;
+
+  @HiveField(8)
+  final String paymentDate;
+
+  @HiveField(9)
+  final String? paymentNote;
+
+  @HiveField(10)
+  final int approved;
+
+  @HiveField(11)
+  final String createdAt;
+
+  @HiveField(12)
+  final String updatedAt;
 
   Payment({
     required this.id,
-    required this.method,
-    required this.amount,
-    required this.status,
-    required this.transactionId,
+    required this.userIdCreate,
+    this.userIdUpdate,
+    required this.paymentContractId,
+    required this.contractInstallmentId,
+    required this.cashAccountId,
+    required this.urlAddress,
+    required this.paymentAmount,
+    required this.paymentDate,
+    this.paymentNote,
+    required this.approved,
     required this.createdAt,
-    this.updatedAt,
+    required this.updatedAt,
   });
 
   factory Payment.fromJson(Map<String, dynamic> json) {
     return Payment(
       id: json['id'] ?? 0,
-      method: json['method'] ?? 'Unknown',
-      amount: (json['amount'] is String)
-          ? double.tryParse(json['amount']) ?? 0.0
-          : (json['amount'] as num?)?.toDouble() ?? 0.0,
-      status: json['status'] ?? 'Unknown',
-      transactionId: json['transaction_id'] ?? '',
+      userIdCreate: json['user_id_create'] ?? 0,
+      userIdUpdate: json['user_id_update'],
+      paymentContractId: json['payment_contract_id'] ?? 0,
+      contractInstallmentId: json['contract_installment_id'] ?? 0,
+      cashAccountId: json['cash_account_id'] ?? 0,
+      urlAddress: json['url_address'] ?? '',
+      paymentAmount: (json['payment_amount'] is String)
+          ? double.tryParse(json['payment_amount']) ?? 0.0
+          : (json['payment_amount'] as num?)?.toDouble() ?? 0.0,
+      paymentDate: json['payment_date'] ?? '',
+      paymentNote: json['payment_note'],
+      approved: json['approved'] ?? 0,
       createdAt: json['created_at'] ?? '',
-      updatedAt: json['updated_at'],
+      updatedAt: json['updated_at'] ?? '',
     );
   }
 }

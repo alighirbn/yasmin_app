@@ -22,6 +22,7 @@ class ApiService {
       final bool isOnline = await _hasInternetConnection();
 
       if (isOnline) {
+        // Fetch contracts from API
         final response = await _dio.get(
           '${AppConfig.baseUrl}/contracts',
           options: Options(
@@ -32,36 +33,10 @@ class ApiService {
         );
 
         if (response.statusCode == 200) {
-          // Parse and save contracts to Hive
+          // Parse contracts from API response
           List<Contract> contracts = (response.data['data'] as List)
               .map((contractData) {
-            return Contract(
-              id: contractData['id'],
-              userIdCreate: contractData['user_id_create'],
-              userIdUpdate: contractData['user_id_update'],
-              contractCustomerId: contractData['contract_customer_id'],
-              contractBuildingId: contractData['contract_building_id'],
-              contractPaymentMethodId: contractData['contract_payment_method_id'],
-              urlAddress: contractData['url_address'] ?? '',
-              contractAmount: (contractData['contract_amount'] is String)
-                  ? double.tryParse(contractData['contract_amount']) ?? 0.0
-                  : (contractData['contract_amount'] as num).toDouble(),
-              contractDate: contractData['contract_date'] ?? '',
-              contractNote: contractData['contract_note'] ?? '',
-              stage: contractData['stage'] ?? '',
-              temporaryAt: contractData['temporary_at'] ?? '',
-              acceptedAt: contractData['accepted_at'],
-              authenticatedAt: contractData['authenticated_at'],
-              createdAt: contractData['created_at'] ?? '',
-              updatedAt: contractData['updated_at'] ?? '',
-              synced: contractData['synced'] == 1,
-              building: Building.fromJson(contractData['building']),
-              customer: Customer.fromJson(contractData['customer']),
-              contractInstallments: (contractData['contract_installments'] as List)
-                  .map((installment) => Installment.fromJson(installment))
-                  .toList(),
-              payment: Payment.fromJson(contractData['payment']), // Added Payment parsing
-            );
+            return Contract.fromJson(contractData);
           }).toList();
 
           // Save contracts to Hive
@@ -71,13 +46,20 @@ class ApiService {
 
           return contracts;
         } else {
-          throw Exception('Failed to load contracts from API');
+          throw Exception('Failed to load contracts from API: ${response.statusCode}');
         }
       } else {
         // If offline, fetch from Hive
         final box = await Hive.openBox<Contract>('contracts');
+        if (box.isEmpty) {
+          throw Exception('No contracts available offline');
+        }
         return box.values.toList();
       }
+    } on DioException catch (e) {
+      throw Exception('API error: ${e.message}');
+    } on HiveError catch (e) {
+      throw Exception('Hive error: ${e.message}');
     } catch (e) {
       throw Exception('Failed to fetch contracts: $e');
     }

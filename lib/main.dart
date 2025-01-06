@@ -10,14 +10,11 @@ void main() async {
 
   // Initialize Hive and open the box
   await Hive.initFlutter();
-
-  // Register adapters
   Hive.registerAdapter(ContractAdapter());
   Hive.registerAdapter(BuildingAdapter());
   Hive.registerAdapter(CustomerAdapter());
   Hive.registerAdapter(InstallmentAdapter());
-  Hive.registerAdapter(PaymentAdapter()); // Register the Payment adapter
-
+  Hive.registerAdapter(PaymentAdapter());
   // Open the contracts box
   await Hive.openBox<Contract>('contractsBox');
 
@@ -35,6 +32,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Contract App',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: isLoggedIn ? ContractsScreen() : LoginScreen(),

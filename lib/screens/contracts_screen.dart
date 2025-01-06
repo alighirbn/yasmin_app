@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart'; // For launching WhatsApp
+import '../services/auth_service.dart';
 import '../services/data_sync_service.dart';
 import '../models/contract.dart';
 import 'contract_detail_screen.dart';
-import 'building_info_screen.dart'; // A new screen for building info
-import 'installments_info_screen.dart'; // A new screen for installments info
-import 'payment_info_screen.dart'; // A new screen for payment info
+import 'building_info_screen.dart';
+import 'installments_info_screen.dart';
+import 'payment_info_screen.dart';
+import 'login_screen.dart'; // Assuming you have a login screen to navigate to after logout
 
 class ContractsScreen extends StatefulWidget {
   @override
@@ -21,21 +24,79 @@ class _ContractsScreenState extends State<ContractsScreen> {
     _contracts = DataSyncService().fetchContracts();
   }
 
+  // Method to handle logout
+  void _logout(BuildContext context) {
+    AuthService().logout();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
+  }
+
+  // Method to open WhatsApp
+  void _openWhatsApp() async {
+    const phoneNumber = '+9647800007345'; // Replace with the desired phone number
+    const message = 'مرحباً هل يمكنكم مساعدتي حول معلومات العقد '; // Replace with your message
+    final url = 'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}';
+
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      // Fallback: Open the URL in a web browser
+      final webUrl = 'https://web.whatsapp.com/send?phone=$phoneNumber&text=${Uri.encodeComponent(message)}';
+      if (await canLaunch(webUrl)) {
+        await launch(webUrl);
+      } else {
+        // Show a snackbar if neither WhatsApp nor the web URL can be launched
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('لم نتمكن من فتح تطبيق الوتساب.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('عقاراتي', style: TextStyle(fontSize: 20)),
-        backgroundColor: Colors.blueGrey[700],
-        elevation: 0,
+        title: Text(
+          'عقاراتي',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.blueGrey[800],
+        elevation: 4,
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: Colors.white),
+            onPressed: () => _logout(context),
+          ),
+        ],
       ),
       body: Container(
-        color: Colors.blueGrey[100],
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blueGrey[800]!, Colors.blueGrey[600]!],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: FutureBuilder<List<Contract>>(
           future: _contracts,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              );
             }
 
             if (snapshot.hasError) {
@@ -43,7 +104,20 @@ class _ContractsScreenState extends State<ContractsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.red)),
+                    Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 48,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'فشل في تحميل العقود',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                      textDirection: TextDirection.rtl,
+                    ),
                     SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
@@ -51,7 +125,17 @@ class _ContractsScreenState extends State<ContractsScreen> {
                           _contracts = DataSyncService().fetchContracts();
                         });
                       },
-                      child: Text('Retry'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueGrey[700],
+                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                      child: Text(
+                        'إعادة المحاولة',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -60,13 +144,20 @@ class _ContractsScreenState extends State<ContractsScreen> {
 
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return Center(
-                child: Text('No contracts found.', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                child: Text(
+                  'لا توجد عقود متاحة.',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                  textDirection: TextDirection.rtl,
+                ),
               );
             }
 
             final contracts = snapshot.data!;
 
-            // Auto select the first contract if not already selected
+            // Auto-select the first contract if not already selected
             if (_selectedContract == null && contracts.isNotEmpty) {
               _selectedContract = contracts[0];
             }
@@ -75,11 +166,30 @@ class _ContractsScreenState extends State<ContractsScreen> {
               children: [
                 _buildContractDropdown(contracts),
                 _selectedContract == null
-                    ? Center(child: Text('Select a contract'))
-                    : _buildContractDashboard(context),
+                    ? Center(
+                  child: Text(
+                    'اختر عقدًا',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                    textDirection: TextDirection.rtl,
+                  ),
+                )
+                    : Expanded(
+                  child: _buildContractDashboard(context),
+                ),
               ],
             );
           },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openWhatsApp,
+        backgroundColor: Colors.green, // WhatsApp green color
+        child: Icon(
+          Icons.message, // WhatsApp icon
+          color: Colors.white,
         ),
       ),
     );
@@ -89,15 +199,28 @@ class _ContractsScreenState extends State<ContractsScreen> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.blueGrey[300]!),
+          color: Colors.blueGrey[700],
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: DropdownButton<Contract>(
           isExpanded: true,
-          hint: Text('Select a Contract', style: TextStyle(color: Colors.blueGrey[800])),
+          hint: Text(
+            'اختر عقدًا',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+            ),
+            textDirection: TextDirection.rtl,
+          ),
           value: _selectedContract,
           onChanged: (Contract? newValue) {
             setState(() {
@@ -108,8 +231,12 @@ class _ContractsScreenState extends State<ContractsScreen> {
             return DropdownMenuItem<Contract>(
               value: contract,
               child: Text(
-                'Contract ID: ${contract.id} - ${contract.building.number}',
-                style: TextStyle(color: Colors.blueGrey[800]),
+                'العقد ID: ${contract.id} - المبنى ${contract.building.buildingNumber}',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+                textDirection: TextDirection.rtl,
               ),
             );
           }).toList(),
@@ -119,88 +246,137 @@ class _ContractsScreenState extends State<ContractsScreen> {
   }
 
   Widget _buildContractDashboard(BuildContext context) {
-    final installmentCount = _selectedContract?.contractInstallments?.length ?? 0;
-    final totalInstallmentAmount = _selectedContract?.contractInstallments
-        ?.fold(0.0, (sum, installment) => sum + (installment.amount ?? 0.0)) ?? 0.0;
-    final totalAmountPaid = _selectedContract?.payment?.amount ?? 0.0;
-    final lastPaymentDate = _selectedContract?.payment?.createdAt ?? 'N/A';
+    if (_selectedContract == null) {
+      return Center(
+        child: Text(
+          'اختر عقدًا',
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.white,
+          ),
+          textDirection: TextDirection.rtl,
+        ),
+      );
+    }
+
+    final installmentCount = _selectedContract!.contractInstallments.length;
+    final totalInstallmentAmount = _selectedContract!.contractInstallments
+        .fold(0.0, (sum, installment) => sum + installment.installmentAmount);
+
+    final totalAmountPaid = _selectedContract!.payments.fold(
+        0.0, (sum, payment) => sum + payment.paymentAmount);
+
+    final lastPaymentDate = _selectedContract!.payments.isNotEmpty
+        ? _selectedContract!.payments
+        .reduce((a, b) => a.createdAt.compareTo(b.createdAt) > 0 ? a : b)
+        .createdAt
+        : 'غير متاح';
 
     final double screenWidth = MediaQuery.of(context).size.width;
     final int crossAxisCount = screenWidth > 600 ? 3 : 2; // Adjust for tablets
 
     return GridView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.all(16),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 8.0,
-        mainAxisSpacing: 8.0,
+        crossAxisSpacing: 16.0,
+        mainAxisSpacing: 16.0,
         childAspectRatio: 1.0, // Square tiles
       ),
       itemCount: 4, // Number of tiles
       itemBuilder: (context, index) {
-        switch (index) {
-          case 0:
-            return DashboardTile(
-              title: 'Contract Info',
-              icon: Icons.info,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ContractDetailScreen(contract: _selectedContract!),
-                  ),
-                );
-              },
-              info: 'ID: ${_selectedContract?.id}',
-            );
-          case 1:
-            return DashboardTile(
-              title: 'Building Info',
-              icon: Icons.home,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BuildingInfoScreen(building: _selectedContract!.building),
-                  ),
-                );
-              },
-              info: 'Building: ${_selectedContract?.building.number}',
-            );
-          case 2:
-            return DashboardTile(
-              title: 'Installments Info',
-              icon: Icons.payment,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => InstallmentsInfoScreen(contract: _selectedContract!),
-                  ),
-                );
-              },
-              info: 'Count: $installmentCount\nTotal: \$${totalInstallmentAmount.toStringAsFixed(2)}',
-            );
-          case 3:
-            return DashboardTile(
-              title: 'Payment Info',
-              icon: Icons.credit_card,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PaymentInfoScreen(contract: _selectedContract!),
-                  ),
-                );
-              },
-              info: 'Paid: \$${totalAmountPaid.toStringAsFixed(2)}\nLast: $lastPaymentDate',
-            );
-          default:
-            return Container();
-        }
+        return DashboardTile(
+          title: _getTileTitle(index),
+          icon: _getTileIcon(index),
+          onTap: () => _navigateToScreen(context, index),
+          info: _getTileInfo(index, installmentCount, totalInstallmentAmount,
+              totalAmountPaid, lastPaymentDate),
+        );
       },
     );
+  }
+
+  String _getTileTitle(int index) {
+    switch (index) {
+      case 0:
+        return 'معلومات العقد';
+      case 1:
+        return 'معلومات المبنى';
+      case 2:
+        return 'معلومات الأقساط';
+      case 3:
+        return 'معلومات الدفع';
+      default:
+        return '';
+    }
+  }
+
+  IconData _getTileIcon(int index) {
+    switch (index) {
+      case 0:
+        return Icons.info;
+      case 1:
+        return Icons.home;
+      case 2:
+        return Icons.payment;
+      case 3:
+        return Icons.credit_card;
+      default:
+        return Icons.error;
+    }
+  }
+
+  String _getTileInfo(int index, int installmentCount, double totalInstallmentAmount,
+      double totalAmountPaid, String lastPaymentDate) {
+    switch (index) {
+      case 0:
+        return 'رقم العقد: ${_selectedContract!.id}';
+      case 1:
+        return 'المبنى: ${_selectedContract!.building.buildingNumber}';
+      case 2:
+        return 'عدد الأقساط: $installmentCount\nالمجموع: ${totalInstallmentAmount.toStringAsFixed(2)} ر.س';
+      case 3:
+        return 'المدفوع: ${totalAmountPaid.toStringAsFixed(2)} ر.س\nآخر دفع: $lastPaymentDate';
+      default:
+        return '';
+    }
+  }
+
+  void _navigateToScreen(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ContractDetailScreen(contract: _selectedContract!),
+          ),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BuildingInfoScreen(building: _selectedContract!.building),
+          ),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => InstallmentsInfoScreen(contract: _selectedContract!),
+          ),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PaymentInfoScreen(contract: _selectedContract!),
+          ),
+        );
+        break;
+    }
   }
 }
 
@@ -220,17 +396,18 @@ class DashboardTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
-              colors: [Colors.blueGrey[50]!, Colors.white],
+              colors: [Colors.blueGrey[700]!, Colors.blueGrey[600]!],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -239,11 +416,31 @@ class DashboardTile extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.blue, size: 40),
+              Icon(
+                icon,
+                color: Colors.white,
+                size: 40,
+              ),
+              SizedBox(height: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textDirection: TextDirection.rtl,
+              ),
               SizedBox(height: 8),
-              Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
-              Text(info, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.blueGrey[700])),
+              Text(
+                info,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white70,
+                ),
+                textDirection: TextDirection.rtl,
+              ),
             ],
           ),
         ),

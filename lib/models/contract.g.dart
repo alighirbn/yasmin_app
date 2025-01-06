@@ -37,7 +37,7 @@ class ContractAdapter extends TypeAdapter<Contract> {
       building: fields[17] as Building,
       customer: fields[18] as Customer,
       contractInstallments: (fields[19] as List).cast<Installment>(),
-      payment: fields[20] as Payment,
+      payments: (fields[20] as List).cast<Payment>(),
     );
   }
 
@@ -86,7 +86,7 @@ class ContractAdapter extends TypeAdapter<Contract> {
       ..writeByte(19)
       ..write(obj.contractInstallments)
       ..writeByte(20)
-      ..write(obj.payment);
+      ..write(obj.payments);
   }
 
   @override
@@ -111,19 +111,61 @@ class BuildingAdapter extends TypeAdapter<Building> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Building(
-      number: fields[0] as String,
-      address: fields[1] as String,
+      id: fields[0] as int,
+      userIdCreate: fields[1] as int?,
+      userIdUpdate: fields[2] as int?,
+      buildingCategoryId: fields[3] as int,
+      buildingTypeId: fields[4] as int,
+      classificationId: fields[5] as int,
+      urlAddress: fields[6] as String,
+      hidden: fields[7] as int,
+      buildingNumber: fields[8] as String,
+      houseNumber: fields[9] as String,
+      blockNumber: fields[10] as String,
+      buildingArea: fields[11] as String,
+      buildingMapX: fields[12] as String,
+      buildingMapY: fields[13] as String,
+      createdAt: fields[14] as String?,
+      updatedAt: fields[15] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Building obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(16)
       ..writeByte(0)
-      ..write(obj.number)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.address);
+      ..write(obj.userIdCreate)
+      ..writeByte(2)
+      ..write(obj.userIdUpdate)
+      ..writeByte(3)
+      ..write(obj.buildingCategoryId)
+      ..writeByte(4)
+      ..write(obj.buildingTypeId)
+      ..writeByte(5)
+      ..write(obj.classificationId)
+      ..writeByte(6)
+      ..write(obj.urlAddress)
+      ..writeByte(7)
+      ..write(obj.hidden)
+      ..writeByte(8)
+      ..write(obj.buildingNumber)
+      ..writeByte(9)
+      ..write(obj.houseNumber)
+      ..writeByte(10)
+      ..write(obj.blockNumber)
+      ..writeByte(11)
+      ..write(obj.buildingArea)
+      ..writeByte(12)
+      ..write(obj.buildingMapX)
+      ..writeByte(13)
+      ..write(obj.buildingMapY)
+      ..writeByte(14)
+      ..write(obj.createdAt)
+      ..writeByte(15)
+      ..write(obj.updatedAt);
   }
 
   @override
@@ -148,19 +190,61 @@ class CustomerAdapter extends TypeAdapter<Customer> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Customer(
-      fullName: fields[0] as String,
-      phone: fields[1] as String,
+      id: fields[0] as int,
+      userIdCreate: fields[1] as int?,
+      userIdUpdate: fields[2] as int?,
+      urlAddress: fields[3] as String,
+      customerFullName: fields[4] as String,
+      customerPhone: fields[5] as String,
+      customerEmail: fields[6] as String,
+      customerCardNumber: fields[7] as String,
+      customerCardIssudAuth: fields[8] as String,
+      customerCardIssudDate: fields[9] as String,
+      motherFullName: fields[10] as String,
+      fullAddress: fields[11] as String,
+      addressCardNumber: fields[12] as String,
+      saleman: fields[13] as String,
+      createdAt: fields[14] as String,
+      updatedAt: fields[15] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Customer obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(16)
       ..writeByte(0)
-      ..write(obj.fullName)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.phone);
+      ..write(obj.userIdCreate)
+      ..writeByte(2)
+      ..write(obj.userIdUpdate)
+      ..writeByte(3)
+      ..write(obj.urlAddress)
+      ..writeByte(4)
+      ..write(obj.customerFullName)
+      ..writeByte(5)
+      ..write(obj.customerPhone)
+      ..writeByte(6)
+      ..write(obj.customerEmail)
+      ..writeByte(7)
+      ..write(obj.customerCardNumber)
+      ..writeByte(8)
+      ..write(obj.customerCardIssudAuth)
+      ..writeByte(9)
+      ..write(obj.customerCardIssudDate)
+      ..writeByte(10)
+      ..write(obj.motherFullName)
+      ..writeByte(11)
+      ..write(obj.fullAddress)
+      ..writeByte(12)
+      ..write(obj.addressCardNumber)
+      ..writeByte(13)
+      ..write(obj.saleman)
+      ..writeByte(14)
+      ..write(obj.createdAt)
+      ..writeByte(15)
+      ..write(obj.updatedAt);
   }
 
   @override
@@ -185,19 +269,46 @@ class InstallmentAdapter extends TypeAdapter<Installment> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Installment(
-      dueDate: fields[0] as String,
-      amount: fields[1] as double,
+      id: fields[0] as int,
+      userIdCreate: fields[1] as int,
+      userIdUpdate: fields[2] as int?,
+      contractId: fields[3] as int,
+      installmentId: fields[4] as int,
+      urlAddress: fields[5] as String,
+      installmentAmount: fields[6] as double,
+      installmentDate: fields[7] as String,
+      paid: fields[8] as int,
+      createdAt: fields[9] as String,
+      updatedAt: fields[10] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Installment obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(11)
       ..writeByte(0)
-      ..write(obj.dueDate)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.amount);
+      ..write(obj.userIdCreate)
+      ..writeByte(2)
+      ..write(obj.userIdUpdate)
+      ..writeByte(3)
+      ..write(obj.contractId)
+      ..writeByte(4)
+      ..write(obj.installmentId)
+      ..writeByte(5)
+      ..write(obj.urlAddress)
+      ..writeByte(6)
+      ..write(obj.installmentAmount)
+      ..writeByte(7)
+      ..write(obj.installmentDate)
+      ..writeByte(8)
+      ..write(obj.paid)
+      ..writeByte(9)
+      ..write(obj.createdAt)
+      ..writeByte(10)
+      ..write(obj.updatedAt);
   }
 
   @override
@@ -223,32 +334,50 @@ class PaymentAdapter extends TypeAdapter<Payment> {
     };
     return Payment(
       id: fields[0] as int,
-      method: fields[1] as String,
-      amount: fields[2] as double,
-      status: fields[3] as String,
-      transactionId: fields[4] as String,
-      createdAt: fields[5] as String,
-      updatedAt: fields[6] as String?,
+      userIdCreate: fields[1] as int,
+      userIdUpdate: fields[2] as int?,
+      paymentContractId: fields[3] as int,
+      contractInstallmentId: fields[4] as int,
+      cashAccountId: fields[5] as int,
+      urlAddress: fields[6] as String,
+      paymentAmount: fields[7] as double,
+      paymentDate: fields[8] as String,
+      paymentNote: fields[9] as String?,
+      approved: fields[10] as int,
+      createdAt: fields[11] as String,
+      updatedAt: fields[12] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Payment obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.method)
+      ..write(obj.userIdCreate)
       ..writeByte(2)
-      ..write(obj.amount)
+      ..write(obj.userIdUpdate)
       ..writeByte(3)
-      ..write(obj.status)
+      ..write(obj.paymentContractId)
       ..writeByte(4)
-      ..write(obj.transactionId)
+      ..write(obj.contractInstallmentId)
       ..writeByte(5)
-      ..write(obj.createdAt)
+      ..write(obj.cashAccountId)
       ..writeByte(6)
+      ..write(obj.urlAddress)
+      ..writeByte(7)
+      ..write(obj.paymentAmount)
+      ..writeByte(8)
+      ..write(obj.paymentDate)
+      ..writeByte(9)
+      ..write(obj.paymentNote)
+      ..writeByte(10)
+      ..write(obj.approved)
+      ..writeByte(11)
+      ..write(obj.createdAt)
+      ..writeByte(12)
       ..write(obj.updatedAt);
   }
 

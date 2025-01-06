@@ -1,4 +1,4 @@
-import 'package:yasmin_app/models/contract.dart';
+import '../models/contract.dart';
 import 'package:flutter/material.dart';
 import '../services/local_database_service.dart';
 
