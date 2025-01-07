@@ -8,17 +8,27 @@ class ContractDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Access the theme colors and text styles
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('تفاصيل العقد', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blueGrey[800],
-        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
+          'تفاصيل العقد',
+          style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
+        ),
+        backgroundColor: colorScheme.primary,
+        iconTheme: IconThemeData(color: colorScheme.onPrimary),
         elevation: 0,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueGrey[800]!, Colors.blueGrey[600]!],
+            colors: [
+              colorScheme.primary,
+              colorScheme.secondary,
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -29,24 +39,24 @@ class ContractDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionTitle('معلومات العقد'),
-                _buildDetailCard('رقم العقار', contract.building.buildingNumber),
-                _buildDetailCard('مبلغ العقد', '\$${contract.contractAmount}'),
-                _buildDetailCard('تأريخ العقد', contract.contractDate),
-                _buildDetailCard('ملاحظات', contract.contractNote),
+                _buildSectionTitle('معلومات العقد', textTheme, colorScheme),
+                _buildDetailCard('رقم العقار', contract.building.buildingNumber, colorScheme, textTheme),
+                _buildDetailCard('مبلغ العقد', '\$${contract.contractAmount}', colorScheme, textTheme),
+                _buildDetailCard('تأريخ العقد', contract.contractDate, colorScheme, textTheme),
+                _buildDetailCard('ملاحظات', contract.contractNote, colorScheme, textTheme),
 
                 SizedBox(height: 24),
-                _buildSectionTitle('معلومات العميل'),
-                _buildDetailCard('الاسم الكامل', contract.customer.customerFullName),
-                _buildDetailCard('الهاتف', contract.customer.customerPhone),
-                _buildDetailCard('البريد الإلكتروني', contract.customer.customerEmail),
-                _buildDetailCard('رقم البطاقة', contract.customer.customerCardNumber),
-                _buildDetailCard('جهة الإصدار', contract.customer.customerCardIssudAuth),
-                _buildDetailCard('تاريخ الإصدار', contract.customer.customerCardIssudDate),
-                _buildDetailCard('اسم الأم', contract.customer.motherFullName),
-                _buildDetailCard('العنوان الكامل', contract.customer.fullAddress),
-                _buildDetailCard('رقم العنوان', contract.customer.addressCardNumber),
-                _buildDetailCard('البائع', contract.customer.saleman),
+                _buildSectionTitle('معلومات العميل', textTheme, colorScheme),
+                _buildDetailCard('الاسم الكامل', contract.customer.customerFullName, colorScheme, textTheme),
+                _buildDetailCard('الهاتف', contract.customer.customerPhone, colorScheme, textTheme),
+                _buildDetailCard('البريد الإلكتروني', contract.customer.customerEmail, colorScheme, textTheme),
+                _buildDetailCard('رقم البطاقة', contract.customer.customerCardNumber, colorScheme, textTheme),
+                _buildDetailCard('جهة الإصدار', contract.customer.customerCardIssudAuth, colorScheme, textTheme),
+                _buildDetailCard('تاريخ الإصدار', contract.customer.customerCardIssudDate, colorScheme, textTheme),
+                _buildDetailCard('اسم الأم', contract.customer.motherFullName, colorScheme, textTheme),
+                _buildDetailCard('العنوان الكامل', contract.customer.fullAddress, colorScheme, textTheme),
+                _buildDetailCard('رقم العنوان', contract.customer.addressCardNumber, colorScheme, textTheme),
+                _buildDetailCard('البائع', contract.customer.saleman, colorScheme, textTheme),
               ],
             ),
           ),
@@ -55,34 +65,39 @@ class ContractDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, TextTheme textTheme, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 22,
+        style: textTheme.headlineSmall?.copyWith(
+          color: colorScheme.onPrimary,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
         ),
       ),
     );
   }
 
-  Widget _buildDetailCard(String label, String value) {
+  Widget _buildDetailCard(String label, String value, ColorScheme colorScheme, TextTheme textTheme) {
     return Card(
-      color: Colors.blueGrey[700],
+      color: colorScheme.surface,
       margin: EdgeInsets.only(bottom: 16.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            Icon(Icons.info, color: Colors.lightBlue, size: 28),
+            Icon(
+              Icons.info,
+              color: colorScheme.primary,
+              size: 28,
+            ),
             SizedBox(width: 16),
             Expanded(
               child: Text(
                 '$label: $value',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
           ],

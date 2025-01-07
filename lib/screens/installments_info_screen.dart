@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Import the intl package
+import 'package:intl/intl.dart'; // For number formatting
 import '../models/contract.dart';
 
 class InstallmentsInfoScreen extends StatelessWidget {
@@ -9,6 +9,10 @@ class InstallmentsInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Access the theme colors and text styles
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     final installmentCount = contract.contractInstallments.length;
     final totalAmount = contract.contractInstallments
         .fold(0.0, (sum, installment) => sum + installment.installmentAmount);
@@ -18,14 +22,20 @@ class InstallmentsInfoScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('معلومات الأقساط', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blueGrey[800],
-        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
+          'معلومات الأقساط',
+          style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
+        ),
+        backgroundColor: colorScheme.primary,
+        iconTheme: IconThemeData(color: colorScheme.onPrimary),
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueGrey[800]!, Colors.blueGrey[600]!],
+            colors: [
+              colorScheme.primary,
+              colorScheme.secondary,
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -38,11 +48,11 @@ class InstallmentsInfoScreen extends StatelessWidget {
               // Display total installments and total amount
               Text(
                 'إجمالي الأقساط: $installmentCount',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
               ),
               Text(
                 'المبلغ الإجمالي: ${numberFormat.format(totalAmount)} دينار',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
               ),
               SizedBox(height: 20), // Add some spacing
 
@@ -53,27 +63,26 @@ class InstallmentsInfoScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final installment = contract.contractInstallments[index];
                     return Card(
-                      color: Colors.blueGrey[700],
+                      color: colorScheme.surface,
                       margin: EdgeInsets.symmetric(vertical: 8.0),
                       child: ListTile(
                         title: Text(
                           'القسط ${index + 1}',
-                          style: TextStyle(color: Colors.white),
+                          style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'المبلغ: ${numberFormat.format(installment.installmentAmount)} دينار',
-                              style: TextStyle(color: Colors.white70),
+                              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.8)),
                             ),
                             Text(
-                              'تاريخ الاستحقاق: ${installment.installmentDate}', // Updated field name
-                              style: TextStyle(color: Colors.white70),
+                              'تاريخ الاستحقاق: ${installment.installmentDate}',
+                              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.8)),
                             ),
                           ],
                         ),
-
                       ),
                     );
                   },

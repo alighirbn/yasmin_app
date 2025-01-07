@@ -4,6 +4,7 @@ import 'models/contract.dart';
 import 'services/auth_service.dart';
 import 'screens/contracts_screen.dart';
 import 'screens/login_screen.dart';
+import 'theme/app_theme.dart'; // Custom theme file
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +16,6 @@ void main() async {
   Hive.registerAdapter(CustomerAdapter());
   Hive.registerAdapter(InstallmentAdapter());
   Hive.registerAdapter(PaymentAdapter());
-  // Open the contracts box
   await Hive.openBox<Contract>('contractsBox');
 
   final authService = AuthService();
@@ -34,7 +34,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Contract App',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: AppTheme.lightTheme, // Use custom light theme
+      darkTheme: AppTheme.darkTheme, // Use custom dark theme
+      themeMode: ThemeMode.system, // Follow system theme
       home: isLoggedIn ? ContractsScreen() : LoginScreen(),
     );
   }

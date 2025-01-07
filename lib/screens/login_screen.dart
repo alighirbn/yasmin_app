@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد.'),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -50,11 +50,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access the theme colors and text styles
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueGrey[800]!, Colors.blueGrey[600]!],
+            colors: [
+              colorScheme.primary,
+              colorScheme.secondary,
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -67,6 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
+              color: colorScheme.surface,
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Form(
@@ -83,10 +91,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(height: 20),
                       Text(
                         'تسجيل الدخول',
-                        style: TextStyle(
-                          fontSize: 28,
+                        style: textTheme.headlineSmall?.copyWith(
+                          color: colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blueGrey[800],
                         ),
                         textDirection: TextDirection.rtl,
                       ),
@@ -95,13 +102,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _emailController,
                         decoration: InputDecoration(
                           labelText: 'البريد الإلكتروني',
-                          prefixIcon: Icon(Icons.email, color: Colors.blueGrey[800]),
+                          prefixIcon: Icon(Icons.email, color: colorScheme.primary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blueGrey[800]!),
+                            borderSide: BorderSide(color: colorScheme.primary),
                           ),
                         ),
                         validator: (value) => value!.isEmpty ? 'يرجى إدخال البريد الإلكتروني' : null,
@@ -113,13 +120,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _passwordController,
                         decoration: InputDecoration(
                           labelText: 'كلمة المرور',
-                          prefixIcon: Icon(Icons.lock, color: Colors.blueGrey[800]),
+                          prefixIcon: Icon(Icons.lock, color: colorScheme.primary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blueGrey[800]!),
+                            borderSide: BorderSide(color: colorScheme.primary),
                           ),
                         ),
                         validator: (value) => value!.isEmpty ? 'يرجى إدخال كلمة المرور' : null,
@@ -129,12 +136,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(height: 24),
                       _isLoading
                           ? CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey[800]!),
+                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
                       )
                           : ElevatedButton(
                         onPressed: _login,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueGrey[800],
+                          backgroundColor: colorScheme.primary,
                           padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -143,9 +150,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: Text(
                           'تسجيل الدخول',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
+                          style: textTheme.titleMedium?.copyWith(
+                            color: colorScheme.onPrimary,
                           ),
                           textDirection: TextDirection.rtl,
                         ),

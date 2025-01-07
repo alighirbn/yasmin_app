@@ -8,17 +8,27 @@ class BuildingInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Access the theme colors
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('معلومات المبنى', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blueGrey[800],
-        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
+          'معلومات المبنى',
+          style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
+        ),
+        backgroundColor: colorScheme.primary,
+        iconTheme: IconThemeData(color: colorScheme.onPrimary),
         elevation: 4,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueGrey[800]!, Colors.blueGrey[600]!],
+            colors: [
+              colorScheme.primary,
+              colorScheme.secondary,
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -32,16 +42,14 @@ class BuildingInfoScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader('المعلومات العامة'),
-                _buildInfoCard([
-                  _buildInfoRow('رقم المبنى', building.buildingNumber),
-                  _buildInfoRow('رقم المنزل', building.houseNumber),
-                  _buildInfoRow('رقم البلوك', building.blockNumber),
-                  _buildInfoRow('مساحة المبنى', building.buildingArea),
-                  _buildInfoRow('رقم الفئة', building.buildingCategoryId.toString()),
-                  _buildInfoRow('رقم النوع', building.buildingTypeId.toString()),
-                  _buildInfoRow('رقم التصنيف', building.classificationId.toString()),
-                ]),
+                _buildSectionHeader('المعلومات العامة', textTheme, colorScheme),
+                _buildDetailCard('رقم المبنى', building.buildingNumber, colorScheme, textTheme),
+                _buildDetailCard('رقم المنزل', building.houseNumber, colorScheme, textTheme),
+                _buildDetailCard('رقم البلوك', building.blockNumber, colorScheme, textTheme),
+                _buildDetailCard('مساحة المبنى', building.buildingArea, colorScheme, textTheme),
+                _buildDetailCard('رقم الفئة', building.buildingCategoryId.toString(), colorScheme, textTheme),
+                _buildDetailCard('رقم النوع', building.buildingTypeId.toString(), colorScheme, textTheme),
+                _buildDetailCard('رقم التصنيف', building.classificationId.toString(), colorScheme, textTheme),
               ],
             ),
           ),
@@ -50,61 +58,42 @@ class BuildingInfoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, TextTheme textTheme, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 20,
+        style: textTheme.titleLarge?.copyWith(
+          color: colorScheme.onPrimary, // Use onPrimary for contrast with primary background
           fontWeight: FontWeight.bold,
-          color: Colors.white,
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              '$label:',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoCard(List<Widget> children) {
+  Widget _buildDetailCard(String label, String value, ColorScheme colorScheme, TextTheme textTheme) {
     return Card(
-      color: Colors.blueGrey[700],
-      margin: EdgeInsets.symmetric(vertical: 8.0),
+      color: colorScheme.surface,
+      margin: EdgeInsets.only(bottom: 16.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children,
+        child: Row(
+          children: [
+            Icon(
+              Icons.info,
+              color: colorScheme.primary,
+              size: 28,
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                '$label: $value',
+                style: textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

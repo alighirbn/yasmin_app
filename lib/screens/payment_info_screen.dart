@@ -9,6 +9,10 @@ class PaymentInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Access the theme colors and text styles
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     // Calculate total amount paid
     final totalAmountPaid = contract.payments.fold(
         0.0, (sum, payment) => sum + payment.paymentAmount);
@@ -25,14 +29,20 @@ class PaymentInfoScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('معلومات الدفع', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.blueGrey[800],
-        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
+          'معلومات الدفع',
+          style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary),
+        ),
+        backgroundColor: colorScheme.primary,
+        iconTheme: IconThemeData(color: colorScheme.onPrimary),
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueGrey[800]!, Colors.blueGrey[600]!],
+            colors: [
+              colorScheme.primary,
+              colorScheme.secondary,
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -45,21 +55,27 @@ class PaymentInfoScreen extends StatelessWidget {
               // Total Paid and Last Payment Date
               Text(
                 'المبلغ المدفوع: ${numberFormat.format(totalAmountPaid)} دينار',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
               ),
               SizedBox(height: 10),
               Text(
                 'تاريخ آخر دفعة: $lastPaymentDate',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
               ),
               SizedBox(height: 20),
-              Divider(thickness: 1, color: Colors.grey[300]),
+              Divider(
+                thickness: 1,
+                color: colorScheme.onSurface.withOpacity(0.2),
+              ),
               SizedBox(height: 20),
 
               // Payment History
               Text(
                 'سجل المدفوعات:',
-                style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                style: textTheme.titleLarge?.copyWith(
+                  color: colorScheme.onPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               SizedBox(height: 10),
               Expanded(
@@ -67,7 +83,7 @@ class PaymentInfoScreen extends StatelessWidget {
                     ? Center(
                   child: Text(
                     'لا توجد مدفوعات متاحة.',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
                   ),
                 )
                     : ListView.builder(
@@ -75,16 +91,16 @@ class PaymentInfoScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final payment = contract.payments[index];
                     return Card(
-                      color: Colors.blueGrey[700],
+                      color: colorScheme.surface,
                       margin: EdgeInsets.symmetric(vertical: 8.0),
                       child: ListTile(
                         title: Text(
                           'المبلغ: ${numberFormat.format(payment.paymentAmount)} دينار',
-                          style: TextStyle(color: Colors.white),
+                          style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
                         ),
                         subtitle: Text(
                           'التاريخ: ${_formatDate(payment.createdAt)}',
-                          style: TextStyle(color: Colors.white70),
+                          style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.8)),
                         ),
                         trailing: payment.approved == 1
                             ? Icon(Icons.check_circle, color: Colors.green)

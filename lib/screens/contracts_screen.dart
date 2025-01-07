@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // For launching WhatsApp
+import 'package:intl/intl.dart'; // For number formatting
 import '../services/auth_service.dart';
 import '../services/data_sync_service.dart';
 import '../models/contract.dart';
@@ -36,7 +37,7 @@ class _ContractsScreenState extends State<ContractsScreen> {
   // Method to open WhatsApp
   void _openWhatsApp() async {
     const phoneNumber = '+9647800007345'; // Replace with the desired phone number
-    const message = 'مرحباً هل يمكنكم مساعدتي حول معلومات العقد '; // Replace with your message
+    const message = 'مرحباً هل يمكنكم مساعدتي حول معلومات العقد'; // Replace with your message
     final url = 'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}';
 
     if (await canLaunch(url)) {
@@ -51,138 +52,153 @@ class _ContractsScreenState extends State<ContractsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('لم نتمكن من فتح تطبيق الوتساب.'),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
     }
   }
 
+  // Helper function to format numbers with commas and IQD
+  String formatNumber(double number) {
+    final formatter = NumberFormat("#,###", "en_US"); // Use "en_US" for comma as thousand separator
+    return '${formatter.format(number)} دينار';
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Access the theme colors and text styles
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'عقاراتي',
-          style: TextStyle(
-            fontSize: 24,
+          style: textTheme.titleLarge?.copyWith(
+            color: colorScheme.onPrimary,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.blueGrey[800],
+        backgroundColor: colorScheme.primary,
         elevation: 4,
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.logout, color: Colors.white),
+            icon: Icon(Icons.logout, color: colorScheme.onPrimary),
             onPressed: () => _logout(context),
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blueGrey[800]!, Colors.blueGrey[600]!],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: Stack(
+        children: [
+          // Watermark Icon
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: Opacity(
+              opacity: 0.1, // Adjust the opacity to make it subtle
+              child: Icon(
+                Icons.home, // Replace with your desired icon
+                size: 200, // Adjust the size of the icon
+                color: colorScheme.onPrimary,
+              ),
+            ),
           ),
-        ),
-        child: FutureBuilder<List<Contract>>(
-          future: _contracts,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              );
-            }
+          // Main Content
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  colorScheme.primary,
+                  colorScheme.secondary,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: FutureBuilder<List<Contract>>(
+              future: _contracts,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                    ),
+                  );
+                }
 
-            if (snapshot.hasError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: Colors.red,
-                      size: 48,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'فشل في تحميل العقود',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                      textDirection: TextDirection.rtl,
-                    ),
-                    SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _contracts = DataSyncService().fetchContracts();
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueGrey[700],
-                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      ),
-                      child: Text(
-                        'إعادة المحاولة',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: colorScheme.error,
+                          size: 48,
                         ),
+                        SizedBox(height: 16),
+                        Text(
+                          'فشل في تحميل العقود',
+                          style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
+                        ),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _contracts = DataSyncService().fetchContracts();
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.surface,
+                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          child: Text(
+                            'إعادة المحاولة',
+                            style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'لا توجد عقود متاحة.',
+                      style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
+                    ),
+                  );
+                }
+
+                final contracts = snapshot.data!;
+
+                // Auto-select the first contract if not already selected
+                if (_selectedContract == null && contracts.isNotEmpty) {
+                  _selectedContract = contracts[0];
+                }
+
+                return Column(
+                  children: [
+                    _buildContractDropdown(contracts, colorScheme, textTheme),
+                    _selectedContract == null
+                        ? Center(
+                      child: Text(
+                        'اختر عقدًا',
+                        style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
                       ),
+                    )
+                        : Expanded(
+                      child: _buildContractDashboard(context, colorScheme, textTheme),
                     ),
                   ],
-                ),
-              );
-            }
-
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(
-                child: Text(
-                  'لا توجد عقود متاحة.',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                  ),
-                  textDirection: TextDirection.rtl,
-                ),
-              );
-            }
-
-            final contracts = snapshot.data!;
-
-            // Auto-select the first contract if not already selected
-            if (_selectedContract == null && contracts.isNotEmpty) {
-              _selectedContract = contracts[0];
-            }
-
-            return Column(
-              children: [
-                _buildContractDropdown(contracts),
-                _selectedContract == null
-                    ? Center(
-                  child: Text(
-                    'اختر عقدًا',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                    textDirection: TextDirection.rtl,
-                  ),
-                )
-                    : Expanded(
-                  child: _buildContractDashboard(context),
-                ),
-              ],
-            );
-          },
-        ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openWhatsApp,
@@ -195,13 +211,14 @@ class _ContractsScreenState extends State<ContractsScreen> {
     );
   }
 
-  Widget _buildContractDropdown(List<Contract> contracts) {
+  Widget _buildContractDropdown(
+      List<Contract> contracts, ColorScheme colorScheme, TextTheme textTheme) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.blueGrey[700],
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -215,11 +232,7 @@ class _ContractsScreenState extends State<ContractsScreen> {
           isExpanded: true,
           hint: Text(
             'اختر عقدًا',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-            ),
-            textDirection: TextDirection.rtl,
+            style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
           ),
           value: _selectedContract,
           onChanged: (Contract? newValue) {
@@ -232,11 +245,7 @@ class _ContractsScreenState extends State<ContractsScreen> {
               value: contract,
               child: Text(
                 'العقد ID: ${contract.id} - المبنى ${contract.building.buildingNumber}',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
-                textDirection: TextDirection.rtl,
+                style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
               ),
             );
           }).toList(),
@@ -245,16 +254,13 @@ class _ContractsScreenState extends State<ContractsScreen> {
     );
   }
 
-  Widget _buildContractDashboard(BuildContext context) {
+  Widget _buildContractDashboard(
+      BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
     if (_selectedContract == null) {
       return Center(
         child: Text(
           'اختر عقدًا',
-          style: TextStyle(
-            fontSize: 18,
-            color: Colors.white,
-          ),
-          textDirection: TextDirection.rtl,
+          style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
         ),
       );
     }
@@ -263,8 +269,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
     final totalInstallmentAmount = _selectedContract!.contractInstallments
         .fold(0.0, (sum, installment) => sum + installment.installmentAmount);
 
-    final totalAmountPaid = _selectedContract!.payments.fold(
-        0.0, (sum, payment) => sum + payment.paymentAmount);
+    final totalAmountPaid = _selectedContract!.payments
+        .fold(0.0, (sum, payment) => sum + payment.paymentAmount);
 
     final lastPaymentDate = _selectedContract!.payments.isNotEmpty
         ? _selectedContract!.payments
@@ -291,6 +297,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
           onTap: () => _navigateToScreen(context, index),
           info: _getTileInfo(index, installmentCount, totalInstallmentAmount,
               totalAmountPaid, lastPaymentDate),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
         );
       },
     );
@@ -326,17 +334,21 @@ class _ContractsScreenState extends State<ContractsScreen> {
     }
   }
 
-  String _getTileInfo(int index, int installmentCount, double totalInstallmentAmount,
-      double totalAmountPaid, String lastPaymentDate) {
+  String _getTileInfo(
+      int index,
+      int installmentCount,
+      double totalInstallmentAmount,
+      double totalAmountPaid,
+      String lastPaymentDate) {
     switch (index) {
       case 0:
         return 'رقم العقد: ${_selectedContract!.id}';
       case 1:
         return 'المبنى: ${_selectedContract!.building.buildingNumber}';
       case 2:
-        return 'عدد الأقساط: $installmentCount\nالمجموع: ${totalInstallmentAmount.toStringAsFixed(2)} ر.س';
+        return 'عدد الأقساط: $installmentCount\nالمجموع: ${formatNumber(totalInstallmentAmount)}';
       case 3:
-        return 'المدفوع: ${totalAmountPaid.toStringAsFixed(2)} ر.س\nآخر دفع: $lastPaymentDate';
+        return 'المدفوع: ${formatNumber(totalAmountPaid)}\nآخر دفع: $lastPaymentDate';
       default:
         return '';
     }
@@ -385,12 +397,16 @@ class DashboardTile extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final String info;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
 
   const DashboardTile({
     required this.title,
     required this.icon,
     required this.onTap,
     required this.info,
+    required this.colorScheme,
+    required this.textTheme,
   });
 
   @override
@@ -407,7 +423,10 @@ class DashboardTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
-              colors: [Colors.blueGrey[700]!, Colors.blueGrey[600]!],
+              colors: [
+                colorScheme.surface,
+                colorScheme.surface,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -418,28 +437,24 @@ class DashboardTile extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: Colors.white,
+                color: colorScheme.onPrimary,
                 size: 40,
               ),
               SizedBox(height: 12),
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 18,
+                style: textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onPrimary,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
                 ),
-                textDirection: TextDirection.rtl,
               ),
               SizedBox(height: 8),
               Text(
                 info,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white70,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onPrimary.withOpacity(0.8),
                 ),
-                textDirection: TextDirection.rtl,
               ),
             ],
           ),
