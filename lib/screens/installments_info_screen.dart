@@ -81,6 +81,23 @@ class InstallmentsInfoScreen extends StatelessWidget {
                               'تاريخ الاستحقاق: ${installment.installmentDate}',
                               style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.8)),
                             ),
+                            // Show if the installment is paid or not
+                            Row(
+                              children: [
+                                Icon(
+                                  installment.paid == 1 ? Icons.check_circle : Icons.cancel,
+                                  color: installment.paid == 1 ? Colors.green : Colors.red,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  installment.paid == 1 ? 'مدفوع' : 'غير مدفوع',
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: installment.paid == 1 ? Colors.green : Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
