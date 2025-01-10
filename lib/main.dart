@@ -9,7 +9,7 @@ import 'theme/app_theme.dart'; // Custom theme file
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Hive and open the box
+  // Initialize Hive and open the boxes
   await Hive.initFlutter();
   Hive.registerAdapter(ContractAdapter());
   Hive.registerAdapter(BuildingAdapter());
@@ -17,6 +17,7 @@ void main() async {
   Hive.registerAdapter(InstallmentAdapter());
   Hive.registerAdapter(PaymentAdapter());
   await Hive.openBox<Contract>('contractsBox');
+  await Hive.openBox('authBox'); // Box for authentication token
 
   final authService = AuthService();
   final isLoggedIn = await authService.isLoggedIn();

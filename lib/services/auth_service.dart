@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:hive/hive.dart';
 import '../config.dart';
 
 class AuthService {
@@ -26,8 +25,9 @@ class AuthService {
           throw Exception('Token is null or empty');
         }
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', token);
+        // Store the token in Hive
+        final authBox = Hive.box('authBox');
+        await authBox.put('auth_token', token);
         return true;
       }
     } on DioError catch (e) {
@@ -38,32 +38,24 @@ class AuthService {
     return false;
   }
 
-  bool _isValidJwt(String token) {
-    final parts = token.split('.');
-    return parts.length == 3; // A valid JWT has 3 parts
-  }
+
 
   Future<bool> isLoggedIn() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final authBox = Hive.box('authBox');
+    final token = authBox.get('auth_token');
 
     // Debug the token
-    print('Token from SharedPreferences: $token');
+    print('Token from Hive: $token');
 
-    if (token == null || token.isEmpty || !_isValidJwt(token)) {
+    if (token == null || token.isEmpty ) {
       // Clear the invalid token
-      await prefs.remove('auth_token');
+      await authBox.delete('auth_token');
       return false;
     }
 
-    try {
-      return !JwtDecoder.isExpired(token);
-    } catch (e) {
-      print('Error decoding token: $e');
-      // Clear the invalid token
-      await prefs.remove('auth_token');
-      return false;
-    }
+
+      return true;
+
   }
 
   Future<void> logout() async {
@@ -79,14 +71,14 @@ class AuthService {
     } catch (e) {
       print('Unexpected error during logout: $e');
     } finally {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.remove('auth_token');
+      final authBox = Hive.box('authBox');
+      await authBox.delete('auth_token');
     }
   }
 
   Future<String?> getAuthToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token');
+    final authBox = Hive.box('authBox');
+    return authBox.get('auth_token');
   }
 
   Future<bool> refreshToken() async {
@@ -100,8 +92,8 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final newToken = response.data['token'];
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', newToken);
+        final authBox = Hive.box('authBox');
+        await authBox.put('auth_token', newToken);
         return true;
       }
     } on DioError catch (e) {

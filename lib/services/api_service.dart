@@ -1,74 +1,68 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive/hive.dart';
-import '../config.dart';
 import '../models/contract.dart';
+import '../config.dart';
+import 'auth_service.dart';
 
 class ApiService {
   final Dio _dio = Dio();
+  final AuthService _authService = AuthService();
 
-  // Fetch contracts from API or Hive
   Future<List<Contract>> fetchContracts() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token');
-
-    if (token == null || token.isEmpty) {
-      throw Exception('No token found');
-    }
-
     try {
-      // Check if the device is online
+      // Check for internet connection
       final bool isOnline = await _hasInternetConnection();
 
       if (isOnline) {
-        // Fetch contracts from API
-        final response = await _dio.get(
-          '${AppConfig.baseUrl}/contracts',
-          options: Options(
-            headers: {
-              'Authorization': 'Bearer $token',
-            },
-          ),
-        );
+        // Get the auth token
+        String? token = await _authService.getAuthToken();
 
-        if (response.statusCode == 200) {
-          // Parse contracts from API response
-          List<Contract> contracts = (response.data['data'] as List)
-              .map((contractData) {
-            return Contract.fromJson(contractData);
-          }).toList();
+        if (token != null) {
+          final response = await _dio.get(
+            '${AppConfig.baseUrl}/contracts',
+            options: Options(
+              headers: {
+                'Authorization': 'Bearer $token',
+              },
+            ),
+          );
 
-          // Save contracts to Hive
-          final box = await Hive.openBox<Contract>('contracts');
-          await box.clear(); // Clear old data
-          await box.addAll(contracts);
+          if (response.statusCode == 200) {
+            final List<dynamic> contractsJson = response.data['data'];
 
-          return contracts;
+            // Map the JSON list to a list of Contract objects
+            final List<Contract> contracts =
+            contractsJson.map((json) => Contract.fromJson(json)).toList();
+
+            // Save contracts to Hive
+            final box = await Hive.openBox<Contract>('contractsBox');
+            await box.clear(); // Clear old data
+            await box.addAll(contracts);
+
+            return contracts;
+          } else {
+            throw Exception('Failed to fetch contracts from API, status code: ${response.statusCode}');
+          }
         } else {
-          throw Exception('Failed to load contracts from API: ${response.statusCode}');
+          throw Exception('User is not authenticated. Please login again.');
         }
       } else {
         // If offline, fetch from Hive
-        final box = await Hive.openBox<Contract>('contracts');
-        if (box.isEmpty) {
-          throw Exception('No contracts available offline');
-        }
+        final box = await Hive.openBox<Contract>('contractsBox');
         return box.values.toList();
       }
-    } on DioException catch (e) {
-      throw Exception('API error: ${e.message}');
-    } on HiveError catch (e) {
-      throw Exception('Hive error: ${e.message}');
     } catch (e) {
-      throw Exception('Failed to fetch contracts: $e');
+      print('Error fetching contracts: $e');
+      rethrow;
     }
   }
 
   // Helper method to check internet connection
   Future<bool> _hasInternetConnection() async {
     try {
-      final result = await InternetAddress.lookup('example.com');
+      // Try to connect to a reliable host (e.g., Google's DNS server)
+      final result = await InternetAddress.lookup('google.com');
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
     } catch (_) {
       return false;
