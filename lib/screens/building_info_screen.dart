@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/contract.dart'; // Adjust the import path as needed
+import '../models/contract.dart';
+import '../widgets/category3_details.dart';
+import '../widgets/category1_details.dart'; // Adjust the import path as needed
 
 class BuildingInfoScreen extends StatelessWidget {
   final Building building;
@@ -8,7 +10,6 @@ class BuildingInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Access the theme colors
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -37,7 +38,7 @@ class BuildingInfoScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height, // Ensure it fills the screen
+              minHeight: MediaQuery.of(context).size.height,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,9 +48,14 @@ class BuildingInfoScreen extends StatelessWidget {
                 _buildDetailCard('رقم المنزل', building.houseNumber, colorScheme, textTheme),
                 _buildDetailCard('رقم البلوك', building.blockNumber, colorScheme, textTheme),
                 _buildDetailCard('مساحة المبنى', building.buildingArea, colorScheme, textTheme),
-                _buildDetailCard('رقم الفئة', building.buildingCategoryId.toString(), colorScheme, textTheme),
-                _buildDetailCard('رقم النوع', building.buildingTypeId.toString(), colorScheme, textTheme),
-                _buildDetailCard('رقم التصنيف', building.classificationId.toString(), colorScheme, textTheme),
+
+
+                // Conditional content based on buildingCategoryId
+                if (building.buildingCategoryId == 3)
+                  Category3Details(colorScheme: colorScheme, textTheme: textTheme),
+                if (building.buildingCategoryId == 1)
+                  Category1Details(colorScheme: colorScheme, textTheme: textTheme),
+                // Add more conditions for other categories
               ],
             ),
           ),
@@ -64,7 +70,7 @@ class BuildingInfoScreen extends StatelessWidget {
       child: Text(
         title,
         style: textTheme.titleLarge?.copyWith(
-          color: colorScheme.onPrimary, // Use onPrimary for contrast with primary background
+          color: colorScheme.onPrimary,
           fontWeight: FontWeight.bold,
         ),
       ),
