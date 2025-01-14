@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // For launching WhatsApp
 import 'package:intl/intl.dart'; // For number formatting
 import 'dart:async'; // For Timer
+import 'package:dio/dio.dart'; // For API requests
+import '../config.dart';
+import '../models/NewsItem.dart';
 import '../services/auth_service.dart';
 import '../services/data_sync_service.dart';
 import '../models/contract.dart';
@@ -20,26 +23,6 @@ class _ContractsScreenState extends State<ContractsScreen> {
   late Future<List<Contract>> _contracts;
   Contract? _selectedContract;
 
-  // Dummy news feed data with images
-  final List<Map<String, String>> newsItems = [
-    {
-      'text': 'خبر 1: تم إطلاق مشروع جديد في المنطقة الشمالية.',
-      'image': 'assets/images/news1.jpg', // Replace with your image path
-    },
-    {
-      'text': 'خبر 2: خصم 10% على العقود الموقعة هذا الشهر.',
-      'image': 'assets/images/news2.jpg',
-    },
-    {
-      'text': 'خبر 3: ورشة عمل حول الاستثمار العقاري يوم الجمعة.',
-      'image': 'assets/images/news3.jpg',
-    },
-    {
-      'text': 'خبر 4: تم تسليم المبنى رقم 5 بالكامل.',
-      'image': 'assets/images/news4.jpg',
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -57,15 +40,19 @@ class _ContractsScreenState extends State<ContractsScreen> {
 
   // Method to open WhatsApp
   void _openWhatsApp() async {
-    const phoneNumber = '+9647800007345'; // Replace with the desired phone number
-    const message = 'مرحباً هل يمكنكم مساعدتي حول معلومات العقد'; // Replace with your message
-    final url = 'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}';
+    const phoneNumber =
+        '+9647800007345'; // Replace with the desired phone number
+    const message =
+        'مرحباً هل يمكنكم مساعدتي حول معلومات العقد'; // Replace with your message
+    final url =
+        'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}';
 
     if (await canLaunch(url)) {
       await launch(url);
     } else {
       // Fallback: Open the URL in a web browser
-      final webUrl = 'https://web.whatsapp.com/send?phone=$phoneNumber&text=${Uri.encodeComponent(message)}';
+      final webUrl =
+          'https://web.whatsapp.com/send?phone=$phoneNumber&text=${Uri.encodeComponent(message)}';
       if (await canLaunch(webUrl)) {
         await launch(webUrl);
       } else {
@@ -82,7 +69,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
 
   // Helper function to format numbers with commas and IQD
   String formatNumber(double number) {
-    final formatter = NumberFormat("#,###", "en_US"); // Use "en_US" for comma as thousand separator
+    final formatter = NumberFormat(
+        "#,###", "en_US"); // Use "en_US" for comma as thousand separator
     return '${formatter.format(number)} دينار';
   }
 
@@ -150,7 +138,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(
                           child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                colorScheme.onPrimary),
                           ),
                         );
                       }
@@ -168,22 +157,26 @@ class _ContractsScreenState extends State<ContractsScreen> {
                               SizedBox(height: 16),
                               Text(
                                 'فشل في تحميل العقود',
-                                style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
+                                style: textTheme.titleMedium
+                                    ?.copyWith(color: colorScheme.onPrimary),
                               ),
                               SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () {
                                   setState(() {
-                                    _contracts = DataSyncService().fetchContracts();
+                                    _contracts =
+                                        DataSyncService().fetchContracts();
                                   });
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: colorScheme.surface,
-                                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 24, vertical: 12),
                                 ),
                                 child: Text(
                                   'إعادة المحاولة',
-                                  style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+                                  style: textTheme.titleMedium
+                                      ?.copyWith(color: colorScheme.onSurface),
                                 ),
                               ),
                             ],
@@ -195,7 +188,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
                         return Center(
                           child: Text(
                             'لا توجد عقود متاحة.',
-                            style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
+                            style: textTheme.titleMedium
+                                ?.copyWith(color: colorScheme.onPrimary),
                           ),
                         );
                       }
@@ -209,17 +203,20 @@ class _ContractsScreenState extends State<ContractsScreen> {
 
                       return Column(
                         children: [
-                          _buildContractDropdown(contracts, colorScheme, textTheme),
+                          _buildContractDropdown(
+                              contracts, colorScheme, textTheme),
                           _selectedContract == null
                               ? Center(
-                            child: Text(
-                              'اختر عقدًا',
-                              style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
-                            ),
-                          )
+                                  child: Text(
+                                    'اختر عقدًا',
+                                    style: textTheme.titleMedium?.copyWith(
+                                        color: colorScheme.onPrimary),
+                                  ),
+                                )
                               : Expanded(
-                            child: _buildContractDashboard(context, colorScheme, textTheme),
-                          ),
+                                  child: _buildContractDashboard(
+                                      context, colorScheme, textTheme),
+                                ),
                         ],
                       );
                     },
@@ -241,88 +238,183 @@ class _ContractsScreenState extends State<ContractsScreen> {
     );
   }
 
+  // Define a model for the news item
+
+  // Method to fetch news items from the API
+  Future<List<NewsItem>> fetchNewsItems() async {
+    final AuthService _authService = AuthService();
+    final dio = Dio(); // Create a Dio instance
+    try {
+      String? token = await _authService.getAuthToken();
+      print('Auth Token: $token'); // Debugging: Print the token
+
+      final response = await dio.get(
+        '${AppConfig.baseUrl}/newsfeed',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      print('API Response: ${response.statusCode}'); // Debugging: Print the status code
+      print('API Data: ${response.data}'); // Debugging: Print the response data
+
+      if (response.statusCode == 200) {
+        // The response is a Map, not a List
+        Map<String, dynamic> responseData = response.data;
+
+        // Check if the 'success' field is true
+        if (responseData['success'] == true) {
+          // Extract the 'data' field, which is a List
+          List<dynamic> data = responseData['data'];
+          return data.map((item) => NewsItem.fromJson(item)).toList();
+        } else {
+          throw Exception('API returned success: false');
+        }
+      } else {
+        throw Exception('Failed to load news items: Status code ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e'); // Debugging: Print the error
+      throw Exception('Failed to load news items: $e');
+    }
+  }
+
   // Build the News Feed Section with auto-scroll
   Widget _buildNewsFeed(ColorScheme colorScheme, TextTheme textTheme) {
     final PageController _pageController = PageController();
     int _currentPage = 0;
 
-    // Auto-scroll logic
-    Timer.periodic(Duration(seconds: 5), (Timer timer) {
-      if (_currentPage < newsItems.length - 1) {
-        _currentPage++;
-      } else {
-        _currentPage = 0;
-      }
-      _pageController.animateToPage(
-        _currentPage,
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    });
-
-    return Container(
-      height: 200, // Adjust the height as needed
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: PageView.builder(
-        controller: _pageController,
-        itemCount: newsItems.length,
-        itemBuilder: (context, index) {
-          final newsItem = newsItems[index];
-          return Padding(
-            padding: EdgeInsets.all(16),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Background Image
-                  Image.asset(
-                    newsItem['image']!,
-                    fit: BoxFit.cover,
-                  ),
-                  // Gradient Overlay
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.7),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                  // News Text
-                  Positioned(
-                    bottom: 16,
-                    left: 16,
-                    right: 16,
-                    child: Text(
-                      newsItem['text']!,
-                      style: textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+    return FutureBuilder<List<NewsItem>>(
+      future: fetchNewsItems(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
             ),
           );
-        },
-      ),
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'فشل في تحميل الأخبار',
+                  style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
+                ),
+                SizedBox(height: 8), // Add some spacing
+                Text(
+                  'الخطأ: ${snapshot.error}', // Display the actual error message
+                  style: textTheme.bodySmall?.copyWith(color: colorScheme.onPrimary),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(
+            child: Text(
+              'لا توجد أخبار متاحة.',
+              style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
+            ),
+          );
+        }
+
+        final newsItems = snapshot.data!;
+
+        // Auto-scroll logic
+        Timer.periodic(Duration(seconds: 5), (Timer timer) {
+          if (_currentPage < newsItems.length - 1) {
+            _currentPage++;
+          } else {
+            _currentPage = 0;
+          }
+          _pageController.animateToPage(
+            _currentPage,
+            duration: Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        });
+
+        return Container(
+          height: 200, // Adjust the height as needed
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: newsItems.length,
+            itemBuilder: (context, index) {
+              final newsItem = newsItems[index];
+              return Padding(
+                padding: EdgeInsets.all(16),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Background Image
+                      Image.network(
+                        newsItem.image,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Icon(
+                              Icons.error,
+                              color: Colors.red,
+                            ),
+                          );
+                        },
+                      ),
+                      // Gradient Overlay
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.7),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                      ),
+                      // News Text
+                      Positioned(
+                        bottom: 16,
+                        left: 16,
+                        right: 16,
+                        child: Text(
+                          newsItem.text,
+                          style: textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -348,7 +440,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
           isExpanded: true,
           hint: Text(
             'اختر عقدًا',
-            style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+            style:
+                textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
           ),
           value: _selectedContract,
           onChanged: (Contract? newValue) {
@@ -361,7 +454,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
               value: contract,
               child: Text(
                 'العقد ID: ${contract.id} - المبنى ${contract.building.buildingNumber}',
-                style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+                style: textTheme.titleMedium
+                    ?.copyWith(color: colorScheme.onSurface),
               ),
             );
           }).toList(),
@@ -391,8 +485,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
 
     final lastPaymentDate = _selectedContract!.payments.isNotEmpty
         ? _selectedContract!.payments
-        .reduce((a, b) => a.createdAt.compareTo(b.createdAt) > 0 ? a : b)
-        .createdAt
+            .reduce((a, b) => a.createdAt.compareTo(b.createdAt) > 0 ? a : b)
+            .createdAt
         : 'غير متاح';
 
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -481,7 +575,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ContractDetailScreen(contract: _selectedContract!),
+            builder: (context) =>
+                ContractDetailScreen(contract: _selectedContract!),
           ),
         );
         break;
@@ -489,7 +584,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => BuildingInfoScreen(building: _selectedContract!.building),
+            builder: (context) =>
+                BuildingInfoScreen(building: _selectedContract!.building),
           ),
         );
         break;
@@ -497,7 +593,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => InstallmentsInfoScreen(contract: _selectedContract!),
+            builder: (context) =>
+                InstallmentsInfoScreen(contract: _selectedContract!),
           ),
         );
         break;
@@ -505,7 +602,8 @@ class _ContractsScreenState extends State<ContractsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PaymentInfoScreen(contract: _selectedContract!),
+            builder: (context) =>
+                PaymentInfoScreen(contract: _selectedContract!),
           ),
         );
         break;
