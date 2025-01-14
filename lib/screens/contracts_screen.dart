@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // For launching WhatsApp
 import 'package:intl/intl.dart'; // For number formatting
+import 'dart:async'; // For Timer
 import '../services/auth_service.dart';
 import '../services/data_sync_service.dart';
 import '../models/contract.dart';
@@ -18,6 +19,26 @@ class ContractsScreen extends StatefulWidget {
 class _ContractsScreenState extends State<ContractsScreen> {
   late Future<List<Contract>> _contracts;
   Contract? _selectedContract;
+
+  // Dummy news feed data with images
+  final List<Map<String, String>> newsItems = [
+    {
+      'text': 'خبر 1: تم إطلاق مشروع جديد في المنطقة الشمالية.',
+      'image': 'assets/images/news1.jpg', // Replace with your image path
+    },
+    {
+      'text': 'خبر 2: خصم 10% على العقود الموقعة هذا الشهر.',
+      'image': 'assets/images/news2.jpg',
+    },
+    {
+      'text': 'خبر 3: ورشة عمل حول الاستثمار العقاري يوم الجمعة.',
+      'image': 'assets/images/news3.jpg',
+    },
+    {
+      'text': 'خبر 4: تم تسليم المبنى رقم 5 بالكامل.',
+      'image': 'assets/images/news4.jpg',
+    },
+  ];
 
   @override
   void initState() {
@@ -117,85 +138,94 @@ class _ContractsScreenState extends State<ContractsScreen> {
                 end: Alignment.bottomCenter,
               ),
             ),
-            child: FutureBuilder<List<Contract>>(
-              future: _contracts,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
-                    ),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: colorScheme.error,
-                          size: 48,
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'فشل في تحميل العقود',
-                          style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
-                        ),
-                        SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _contracts = DataSyncService().fetchContracts();
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.surface,
-                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Column(
+              children: [
+                // News Feed Section
+                _buildNewsFeed(colorScheme, textTheme),
+                // Contracts Section
+                Expanded(
+                  child: FutureBuilder<List<Contract>>(
+                    future: _contracts,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
                           ),
+                        );
+                      }
+
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: colorScheme.error,
+                                size: 48,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'فشل في تحميل العقود',
+                                style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
+                              ),
+                              SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _contracts = DataSyncService().fetchContracts();
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorScheme.surface,
+                                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                ),
+                                child: Text(
+                                  'إعادة المحاولة',
+                                  style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(
                           child: Text(
-                            'إعادة المحاولة',
-                            style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+                            'لا توجد عقود متاحة.',
+                            style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
+                        );
+                      }
 
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'لا توجد عقود متاحة.',
-                      style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
-                    ),
-                  );
-                }
+                      final contracts = snapshot.data!;
 
-                final contracts = snapshot.data!;
+                      // Auto-select the first contract if not already selected
+                      if (_selectedContract == null && contracts.isNotEmpty) {
+                        _selectedContract = contracts[0];
+                      }
 
-                // Auto-select the first contract if not already selected
-                if (_selectedContract == null && contracts.isNotEmpty) {
-                  _selectedContract = contracts[0];
-                }
-
-                return Column(
-                  children: [
-                    _buildContractDropdown(contracts, colorScheme, textTheme),
-                    _selectedContract == null
-                        ? Center(
-                      child: Text(
-                        'اختر عقدًا',
-                        style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
-                      ),
-                    )
-                        : Expanded(
-                      child: _buildContractDashboard(context, colorScheme, textTheme),
-                    ),
-                  ],
-                );
-              },
+                      return Column(
+                        children: [
+                          _buildContractDropdown(contracts, colorScheme, textTheme),
+                          _selectedContract == null
+                              ? Center(
+                            child: Text(
+                              'اختر عقدًا',
+                              style: textTheme.titleMedium?.copyWith(color: colorScheme.onPrimary),
+                            ),
+                          )
+                              : Expanded(
+                            child: _buildContractDashboard(context, colorScheme, textTheme),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -211,6 +241,92 @@ class _ContractsScreenState extends State<ContractsScreen> {
     );
   }
 
+  // Build the News Feed Section with auto-scroll
+  Widget _buildNewsFeed(ColorScheme colorScheme, TextTheme textTheme) {
+    final PageController _pageController = PageController();
+    int _currentPage = 0;
+
+    // Auto-scroll logic
+    Timer.periodic(Duration(seconds: 5), (Timer timer) {
+      if (_currentPage < newsItems.length - 1) {
+        _currentPage++;
+      } else {
+        _currentPage = 0;
+      }
+      _pageController.animateToPage(
+        _currentPage,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    });
+
+    return Container(
+      height: 200, // Adjust the height as needed
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: newsItems.length,
+        itemBuilder: (context, index) {
+          final newsItem = newsItems[index];
+          return Padding(
+            padding: EdgeInsets.all(16),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Background Image
+                  Image.asset(
+                    newsItem['image']!,
+                    fit: BoxFit.cover,
+                  ),
+                  // Gradient Overlay
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                  // News Text
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                    child: Text(
+                      newsItem['text']!,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // Build the Contract Dropdown
   Widget _buildContractDropdown(
       List<Contract> contracts, ColorScheme colorScheme, TextTheme textTheme) {
     return Padding(
@@ -254,6 +370,7 @@ class _ContractsScreenState extends State<ContractsScreen> {
     );
   }
 
+  // Build the Contract Dashboard
   Widget _buildContractDashboard(
       BuildContext context, ColorScheme colorScheme, TextTheme textTheme) {
     if (_selectedContract == null) {
@@ -304,6 +421,7 @@ class _ContractsScreenState extends State<ContractsScreen> {
     );
   }
 
+  // Get the title for each dashboard tile
   String _getTileTitle(int index) {
     switch (index) {
       case 0:
@@ -319,6 +437,7 @@ class _ContractsScreenState extends State<ContractsScreen> {
     }
   }
 
+  // Get the icon for each dashboard tile
   IconData _getTileIcon(int index) {
     switch (index) {
       case 0:
@@ -334,6 +453,7 @@ class _ContractsScreenState extends State<ContractsScreen> {
     }
   }
 
+  // Get the information for each dashboard tile
   String _getTileInfo(
       int index,
       int installmentCount,
@@ -354,6 +474,7 @@ class _ContractsScreenState extends State<ContractsScreen> {
     }
   }
 
+  // Navigate to the appropriate screen based on the tile index
   void _navigateToScreen(BuildContext context, int index) {
     switch (index) {
       case 0:
@@ -392,6 +513,7 @@ class _ContractsScreenState extends State<ContractsScreen> {
   }
 }
 
+// Dashboard Tile Widget
 class DashboardTile extends StatelessWidget {
   final String title;
   final IconData icon;

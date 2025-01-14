@@ -57,13 +57,20 @@ flutter:
     - assets/bc11.jpg
     - assets/bc12.jpg
     - assets/bc14.jpg
-
-   # Splash screen configuration
 flutter_native_splash:
-  color: "#ffffff"  # Background color
-  image: assets/logo.png  # Splash image
-  android: true  # Enable for Android
-  ios: true  # Enable for iOS
-  android_gravity: center  # Center the image on Android
-  ios_content_mode: center  # Center the image on iOS
 
+  # dart run flutter_native_splash:create --path=flutter_native_splash.yaml
+  # dart run flutter_native_splash:remove --path=flutter_native_splash.yaml
+
+  color: "#D4AF37"
+  image: "assets/logo.png"
+  color_dark: "#363636"
+  image_dark: "assets/logo.png"
+
+  android_12:
+    color: "#D4AF37"
+    image: "assets/logo.png"
+    color_dark: "#363636"
+    image_dark: "assets/logo.png"
+
+  web: false
